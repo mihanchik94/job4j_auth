@@ -46,8 +46,9 @@ public class PersonController {
             throw new NullPointerException("Username and password mustn't be empty");
         }
         person.setPassword(encoder.encode(person.getPassword()));
-        Person result = personService.save(person);
-        return new ResponseEntity<>(result, HttpStatus.CREATED);
+        return personService.save(person)
+                .map(entity -> new ResponseEntity<>(entity, HttpStatus.CREATED))
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "This login is already taken. Please come up with another one"));
     }
 
     @ExceptionHandler(value = {IllegalArgumentException.class})

@@ -18,6 +18,7 @@ import java.util.Optional;
 @Service
 @AllArgsConstructor
 public class SimplePersonService implements PersonService, UserDetailsService {
+    private static final Logger LOG = LoggerFactory.getLogger(SimplePersonService.class);
     private final PersonRepository personRepository;
 
 
@@ -32,8 +33,14 @@ public class SimplePersonService implements PersonService, UserDetailsService {
     }
 
     @Override
-    public Person save(Person person) {
-        return personRepository.save(person);
+    public Optional<Person> save(Person person) {
+        try {
+            personRepository.save(person);
+            return Optional.of(person);
+        } catch (Exception e) {
+            LOG.error(e.getMessage(), e);
+        }
+        return Optional.empty();
     }
 
     @Override
