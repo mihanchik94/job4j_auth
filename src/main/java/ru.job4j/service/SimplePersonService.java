@@ -45,12 +45,11 @@ public class SimplePersonService implements PersonService, UserDetailsService {
 
     @Override
     public boolean update(Person person) {
-        return personRepository.findById(person.getId())
-                .map(entity -> {
-                    personRepository.save(entity);
-                    return true;
-                }).orElse(false);
-
+        if (personRepository.findById(person.getId()).isPresent())  {
+            personRepository.save(person);
+            return true;
+        }
+        return false;
     }
 
     @Override
