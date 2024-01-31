@@ -7,7 +7,9 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import ru.job4j.dto.PersonDto;
 import ru.job4j.model.Person;
 import ru.job4j.repository.PersonRepository;
 
@@ -20,6 +22,7 @@ import java.util.Optional;
 public class SimplePersonService implements PersonService, UserDetailsService {
     private static final Logger LOG = LoggerFactory.getLogger(SimplePersonService.class);
     private final PersonRepository personRepository;
+    private final BCryptPasswordEncoder encoder;
 
 
     @Override
@@ -35,6 +38,7 @@ public class SimplePersonService implements PersonService, UserDetailsService {
     @Override
     public Optional<Person> save(Person person) {
         try {
+            person.setPassword(encoder.encode(person.getPassword()));
             personRepository.save(person);
             return Optional.of(person);
         } catch (Exception e) {
@@ -46,6 +50,7 @@ public class SimplePersonService implements PersonService, UserDetailsService {
     @Override
     public boolean update(Person person) {
         if (personRepository.findById(person.getId()).isPresent())  {
+            person.setPassword(encoder.encode(person.getPassword()));
             personRepository.save(person);
             return true;
         }
@@ -59,6 +64,15 @@ public class SimplePersonService implements PersonService, UserDetailsService {
                     personRepository.delete(person);
                     return true;
                 }).orElse(false);
+    }
+
+    @Override
+    public Optional<Person> patch(int id, PersonDto personDto) {
+        return personRepository.findById(id)
+                .map(person -> {
+                    person.setPassword(encoder.encode(person.getPassword()));
+                    return personRepository.save(person);
+                });
     }
 
     @Override

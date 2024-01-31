@@ -1,5 +1,6 @@
 package ru.job4j.service;
 
+import ru.job4j.dto.PersonDto;
 import ru.job4j.model.Person;
 
 import java.util.List;
@@ -11,4 +12,5 @@ public interface PersonService {
     Optional<Person> save(Person person);
     boolean update(Person person);
     boolean delete(int id);
+    Optional<Person> patch(int id, PersonDto personDto);
 }

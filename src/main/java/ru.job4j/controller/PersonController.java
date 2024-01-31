@@ -6,9 +6,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
+import ru.job4j.dto.PersonDto;
 import ru.job4j.model.Person;
 import ru.job4j.service.PersonService;
 
@@ -25,7 +25,6 @@ public class PersonController {
     private static final Logger LOGGER = LoggerFactory.getLogger(PersonController.class);
     private final PersonService personService;
     private final ObjectMapper objectMapper;
-    private BCryptPasswordEncoder encoder;
 
 
     @GetMapping("/")
@@ -45,7 +44,6 @@ public class PersonController {
         if (person.getLogin() == null || person.getPassword() == null) {
             throw new NullPointerException("Username and password mustn't be empty");
         }
-        person.setPassword(encoder.encode(person.getPassword()));
         return personService.save(person)
                 .map(entity -> new ResponseEntity<>(entity, HttpStatus.CREATED))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "This login is already taken. Please come up with another one"));
@@ -77,5 +75,15 @@ public class PersonController {
         return personService.delete(id)
                 ? ResponseEntity.noContent().build()
                 : ResponseEntity.notFound().build();
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Person> patch(@PathVariable int id, @RequestBody PersonDto personDto) {
+        if (personDto.getPassword() == null) {
+            throw new NullPointerException("Password mustn't be empty");
+        }
+        return personService.patch(id, personDto)
+                .map(person -> ResponseEntity.ok(person))
+                .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 }
