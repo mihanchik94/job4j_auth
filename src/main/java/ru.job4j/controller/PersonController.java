@@ -14,6 +14,7 @@ import ru.job4j.service.PersonService;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
@@ -40,10 +41,7 @@ public class PersonController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<Person> create(@RequestBody Person person) {
-        if (person.getLogin() == null || person.getPassword() == null) {
-            throw new NullPointerException("Username and password mustn't be empty");
-        }
+    public ResponseEntity<Person> create(@Valid @RequestBody Person person) {
         return personService.save(person)
                 .map(entity -> new ResponseEntity<>(entity, HttpStatus.CREATED))
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.CONFLICT, "This login is already taken. Please come up with another one"));
@@ -61,10 +59,7 @@ public class PersonController {
     }
 
     @PutMapping("/")
-    public ResponseEntity<Person> update(@RequestBody Person person) {
-        if (person.getLogin() == null || person.getPassword() == null) {
-            throw new NullPointerException("Username and password mustn't be empty");
-        }
+    public ResponseEntity<Person> update(@Valid @RequestBody Person person) {
         return personService.update(person)
                 ? ResponseEntity.ok().build()
                 : new ResponseEntity<>(HttpStatus.NOT_MODIFIED);
@@ -78,10 +73,7 @@ public class PersonController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseEntity<Person> patch(@PathVariable int id, @RequestBody PersonDto personDto) {
-        if (personDto.getPassword() == null) {
-            throw new NullPointerException("Password mustn't be empty");
-        }
+    public ResponseEntity<Person> patch(@PathVariable int id, @Valid @RequestBody PersonDto personDto) {
         return personService.patch(id, personDto)
                 .map(person -> ResponseEntity.ok(person))
                 .orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
